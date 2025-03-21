@@ -19,6 +19,7 @@ import flax
 import flax.linen as nn
 from flax.training import checkpoints
 from flax.training import train_state
+from flax.core import freeze, unfreeze
 
 from ..training.metrics import mean_squared_loss, get_metrics, top5_accuracy, soft_cross_entropy_loss, \
     cross_entropy_loss
@@ -89,7 +90,12 @@ def create_proto_state(rng, model, learning_rate_fn, optimizer='lamb'):
     else:
         raise ValueError('Unknown Optimizer {}!'.format(optimizer))
 
-    variables = model.init({'params': rng}).unfreeze()
+    variables = model.init({'params': rng})
+
+    if isinstance(variables, dict):
+        variables = variables
+    else:
+        variables = variables.unfreeze()
 
     state = ProtoState.create(apply_fn=model.apply, tx=tx, params=variables['params'], epoch=0, best_val_acc=0.0)
     return state
