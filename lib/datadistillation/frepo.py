@@ -13,7 +13,7 @@ import tensorflow as tf
 import jax
 import jax.scipy as sp
 import jax.numpy as jnp
-from scipy.linalg import cho_factor, cho_solve
+from jax.scipy.linalg import cho_factor, cho_solve
 
 import optax
 import flax
@@ -115,7 +115,7 @@ def nfr(x_target, x_proto, y_proto, nn_state, feat_fn, reg=1e-6):
     k_pp = x_proto.dot(x_proto.T)
     k_tp = x_target.dot(x_proto.T)
     k_pp_reg = (k_pp + jnp.abs(reg) * jnp.trace(k_pp) * jnp.eye(k_pp.shape[0]) / k_pp.shape[0])
-    cho_factorized = cho_factor(k_pp_reg)
+    cho_factorized = cho_factor(k_pp_reg, lower=True)
     pred = jnp.dot(k_tp, cho_solve(cho_factorized, y_proto))
     return pred
 
